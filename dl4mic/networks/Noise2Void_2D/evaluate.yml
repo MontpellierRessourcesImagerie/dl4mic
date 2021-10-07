@@ -7,19 +7,19 @@ user_parameters:
   help: The name of the model. The model is read from a folder with this name.
 - name: baseDir
   display: Base Directory
-  value: E:\MRI\Fiji.app\dl4mic\models\
+  value: /home/ltellez/Documents/Fiji.app/dl4mic/models/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\models\
   help: The base-folder under which the trained model is saved.
 - name: testInputPath
   display: Path to the Input Data
-  value: E:\MRI\Fiji.app\dl4mic\n2v-data\evaluation\input\
+  value: /home/ltellez/Documents/Fiji.app/dl4mic/n2v-data/evaluation/input/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\n2v-data\evaluation\input\
   help: The path to the folder containig the noisy input images.
 - name: testGroundTruthPath
   display: Path to the Ground Truth Data
-  value: E:\MRI\Fiji.app\dl4mic\n2v-data\evaluation\gt\
+  value: /home/ltellez/Documents/Fiji.app/dl4mic/n2v-data/evaluation/gt/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\n2v-data\evaluation\gt\
   help: The folder containing the ground-truth images.

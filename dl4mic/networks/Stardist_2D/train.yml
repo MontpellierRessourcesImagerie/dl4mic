@@ -1,43 +1,43 @@
 user_parameters:
 - name: name
   display: Name
-  value: new_stardist_model
+  value: Fluo-N2DL-HeLa
   type: string
   default: new_stardist_model
   help: The name of the model. The model will be saved in a folder with this name. Using the name of an existing model will overwrite the data
 - name: baseDir
   display: Base Directory
-  value: E:\MRI\Fiji.app\dl4mic\models\
+  value: /home/ltellez/Downloads/Fluo-N2DL-HeLa-training/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\models\
   help: The base-folder under which the trained model will be saved.
 - name: dataSourcePath
   display: Path to the Source Data
-  value: E:\MRI\Fiji.app\dl4mic\Stardist-data\second_source\
+  value: /home/ltellez/Downloads/Fluo-N2DL-HeLa-training/01/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\Stardist-data\second_source\
   help: The path to the folder containing the input images on which the model will be trained.
 - name: dataTargetPath
   display: Path to the Target Data
-  value: E:\MRI\Fiji.app\dl4mic\Stardist-data\second_gt\
+  value: /home/ltellez/Downloads/Fluo-N2DL-HeLa-training/01_ST/SEG/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\Stardist-data\second_gt\
   help: The path to the folder containing the gt-masks on which the model will be trained.
 - name: epochs
   display: Epochs
-  value: 100
+  value: 25
   type: int
   default: 200
   help: The number of epochs the network will be trained.
 - name: patchSizeXY
   display: Patch Size XY
-  value: 256
+  value: 128
   type: int
   default: 512
   help: The image is divided into patches for training. Input the size of the patches (length of a side). Larger patches than 512x512 should NOT be selected for network stability.
 - name: nRays
   display: Number of Rays
-  value: 28
+  value: 16
   type: int
   default: 32
   help: Set number of rays (corners) used for StarDist (for instance, a square has 4 corners).

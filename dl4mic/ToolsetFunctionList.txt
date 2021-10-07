@@ -15,8 +15,9 @@ macro:
 	Predict Action Tool (f8)
 	DL4Mic Predict [f8]
 	Predict Action Tool (f8) Options
+	Display Training Evaluation Plot []
 	Open Log []
-	Reset Parameters []
+	Restore all parameters to default values []
 	
 function:
 	//Info
@@ -36,6 +37,7 @@ function:
 		getValueOfParameter(_PT,aParameter)
 		readParameters(_PT)
 		saveParameters(_PT)
+		equalizesParametersLength()
 	//Dialog Management
 		showMenuParameterDialog()
 		showParametersDialog(_PT,parameterGroup)
@@ -52,5 +54,5 @@ function:
 		openImageSeries(path, name, file, zoomOut)
 		findPythonInterpreter()
 		initNetworksArray()
-		displayTrainingEvaluationPlot()
+		displayTrainingEvaluationPlot(baseDir,model)
 		catchLog(_PT)

@@ -7,13 +7,13 @@ user_parameters:
   help: The name of the model. The model will be saved in a folder with this name. Using the name of an existing model will overwrite the data.
 - name: baseDir
   display: Base Directory
-  value: E:\MRI\Fiji.app\dl4mic\models\
+  value: /home/ltellez/Documents/Fiji.app/dl4mic/models/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\models\
   help: The base-folder under which the trained model will be saved.
 - name: dataPath
   display: Path to the Source Data
-  value: E:\MRI\Fiji.app\dl4mic\n2v-data\training\
+  value: /home/ltellez/Documents/Fiji.app/dl4mic/n2v-data/training/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\n2v-data\training\
   help: The path to the folder containing the noisy images on which the model will be trained.

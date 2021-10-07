@@ -1,0 +1,165 @@
+user_parameters:
+- name: name
+  display: Name
+  value: new_CARE_model
+  type: string
+  default: new_CARE_model
+  help: The name of the model. The model will be saved in a folder with this name. Using the name of an existing model will overwrite the data
+- name: baseDir
+  display: Base Directory
+  value: E:\MRI\Fiji.app\dl4mic\models\
+  type: directory
+  default: E:\MRI\Fiji.app\dl4mic\models\
+  help: The base-folder under which the trained model will be saved.
+- name: dataSourcePath
+  display: Path to the Source Data
+  value: E:\MRI\Fiji.app\dl4mic\care-data\training_source\
+  type: directory
+  default: E:\MRI\Fiji.app\dl4mic\care-data\training_source\
+  help: The path to the folder containing the input images on which the model will be trained.
+- name: dataTargetPath
+  display: Path to the Target Data
+  value: E:\MRI\Fiji.app\dl4mic\care-data\training_gt\
+  type: directory
+  default: E:\MRI\Fiji.app\dl4mic\care-data\training_gt\
+  help: The path to the folder containing the gt images on which the model will be trained.
+- name: epochs
+  display: Epochs
+  value: 200
+  type: int
+  default: 200
+  help: The number of epochs the network will be trained.
+- name: patchSize
+  display: Patch Size XY
+  value: 128
+  type: int
+  default: 128
+  help: The image is divided into patches for training. Input the size of the patches (length of a side).
+- name: numberOfPatches
+  display: Number of Patches
+  value: 50
+  type: int
+  default: 50
+  help: Input the number of patch wanted.
+advanced_parameters:
+- name: stepsPerEpoch
+  display: Steps Per Epoch
+  value: 0
+  type: int
+  default: 0
+  help: Define the number of training steps by epoch. By default this parameter is calculated so that each image / patch is seen at least once per epoch. Enter 0 to use number_of_patches / batch_size.
+- name: batchSize
+  display: Batch Size
+  value: 1
+  type: int
+  default: 4
+  help: This parameter describes the amount of images that are loaded into the network per step. Smaller batchsizes may improve training performance slightly but may increase training time. If the notebook crashes while loading the dataset this can be due to a too large batch size. Decrease the number in this case.
+- name: validationFraction
+  display: Validation Fraction
+  value: 10
+  type: float
+  default: 10.0
+  help: The fraction of your training dataset in percent, you want to use to validate the network during the training.
+- name: learningRate
+  display: Initial Learning Rate
+  value: 0.0004
+  type: float
+  default: 0.004
+  help: The initial learning rate. The learning rate controls how much the weights of the network with are adjusted with respect to the loss gradient.
+- name: resumeTraining
+  display: Resume Training
+  value: 0
+  type: bool
+  default: false
+  help: If enabled, the training will take as starting weight the weigths of the Original Model
+- name: startingWeigth
+  display: Original model
+  value: None
+  type: file
+  default: None
+  help: The training will take as starting weight the weigths of that hdf5 file
+data_augmentation:
+- name: useDataAugmentation
+  display: Use Data Augmentation
+  value: 1
+  type: bool
+  default: True
+  help: Data augmentation can improve training progress by amplifying differences in the dataset. This can be useful if the available dataset is small since, in this case, it is possible that a network could quickly learn every example in the dataset (overfitting), without augmentation. Augmentation is not necessary for training and if your training dataset is large you should disable it.
+- name: multiplyDatasetBy
+  display: Multiply Dataset By
+  value: 5
+  type: int
+  default: 5
+  help: TODO
+- name: saveAugmentedImages
+  display: Save Augmented Images
+  value: 0
+  type: bool
+  default: false
+  help: Keep the augmented images after training
+- name: savingPath
+  display: Saving Path
+  value: E:\MRI\Fiji.app\dl4mic\care-data\/
+  type: directory
+  default: E:\MRI\Fiji.app\dl4mic\care-data\
+  help: The base-folder which will contain the source and target augmented images
+- name: useDefaultAugmentationParameters
+  display: Use Default Augmentation Parameters
+  value: 0
+  type: bool
+  default: true
+  help: If not, please choose the probability of the following image manipulations to be used to augment your dataset (1 = always used; 0 = disabled )
+- name: rotate90Degrees
+  display: Probability to rotate 90 Degrees
+  value: 0
+  type: float
+  default: 0
+  help: TODO
+- name: rotate270Degrees
+  display: Probability to rotate 270 degrees
+  value: 0
+  type: float
+  default: 0
+  help: TODO
+- name: flipLeftRight
+  display: Probability to flip left and right
+  value: 0
+  type: float
+  default: 0
+  help: TODO
+- name: flipTopBottom
+  display: Probability to flip top and bottom
+  value: 0
+  type: float
+  default: 0
+  help: NullHelp
+- name: randomZoom
+  display: Probability to zoom
+  value: 0
+  type: float
+  default: 0
+  help: TODO
+- name: randomZoomMagnification
+  display: Maximum intensity of the zoom (between 0-1)
+  value: 0
+  type: float
+  default: 0
+  help: 0 = no zoom ; 1 = zoom up to x2
+- name: randomDistortion
+  display: Probability to distort the image
+  value: 0
+  type: float
+  default: 0
+  help: TODO
+- name: imageShear
+  display: Probability to shear the image
+  value: 0
+  type: float
+  default: 0
+  help: TODO
+- name: maxImageShear
+  display: Maximum intensity of the shear
+  value: 1
+  type: int
+  default: 1
+  help: 1 = no shearing ; 25 = maximum shearing

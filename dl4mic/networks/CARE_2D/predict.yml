@@ -1,0 +1,25 @@
+user_parameters:
+- name: name
+  display: Name
+  value: new_CARE_model
+  type: string
+  default: new_CARE_model
+  help: The name of the model. The model is read from a folder with this name.
+- name: baseDir
+  display: Base Directory
+  value: E:\MRI\Fiji.app\dl4mic\models\
+  type: directory
+  default: E:\MRI\Fiji.app\dl4mic\models\
+  help: The base-folder under which the trained model is saved.
+- name: dataPath
+  display: Path to the Input Data
+  value: E:\MRI\Fiji.app\dl4mic\care-data\prediction_source\
+  type: directory
+  default: E:\MRI\Fiji.app\dl4mic\care-data\prediction_source\
+  help: The path to the folder containig the input images.
+- name: output
+  display: Path to the Output Data
+  value: E:\MRI\Fiji.app\dl4mic\care-data\prediction_output\
+  type: directory
+  default: E:\MRI\Fiji.app\dl4mic\care-data\prediction_output\
+  help: The folder into which the result images will be saved.

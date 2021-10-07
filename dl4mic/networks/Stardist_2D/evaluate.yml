@@ -1,19 +1,19 @@
 user_parameters:
 - name: name
   display: Name
-  value: stardist28_1706
+  value: Fluo-N2DL-HeLa
   type: string
   default: new_stardist_model
   help: The name of the model. The model is read from a folder with this name.
 - name: baseDir
   display: Base Directory
-  value: E:\MRI\Fiji.app\dl4mic\models\
+  value: /home/ltellez/Downloads/Fluo-N2DL-HeLa-training/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\models\
   help: The base-folder under which the trained model is saved.
 - name: nRays
   display: Number of Rays
-  value: 28
+  value: 16
   type: int
   default: 32
   help: Set number of rays (corners) used for StarDist.
@@ -25,13 +25,13 @@ user_parameters:
   help: increase this number if the cells/nuclei are very large or decrease it if they are very small.
 - name: testInputPath
   display: Path to the Input Data
-  value: E:\MRI\Fiji.app\dl4mic\Stardist-data\evaluation_source\
+  value: /home/ltellez/Downloads/Fluo-N2DL-HeLa-training/01/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\Stardist-data\evaluation_source\
   help: The path to the folder containig the input images.
 - name: testGroundTruthPath
   display: Path to the Ground Truth Data
-  value: E:\MRI\Fiji.app\dl4mic\Stardist-data\evaluation_gt\
+  value: /home/ltellez/Downloads/Fluo-N2DL-HeLa-training/01_ST/SEG/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\Stardist-data\evaluation_gt\
   help: The folder containing the ground-truth images.

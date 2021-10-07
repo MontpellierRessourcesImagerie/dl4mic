@@ -30,13 +30,13 @@ var _PT_ACTION = newArray(
 	"evaluate"
 	);
 
-var _CURRENT_PARAMETER_GROUP = newArray(0);
-var _CURRENT_PARAMETER_NAME = newArray(0);
-var _CURRENT_PARAMETER_DISPLAY = newArray(0);
-var _CURRENT_PARAMETER_VALUE = newArray(0);
-var _CURRENT_PARAMETER_HELP = newArray(0);
-var _CURRENT_PARAMETER_TYPE = newArray(0);
-var _CURRENT_PARAMETER_DEFAULT = newArray(0);
+var _CURRENT_PARAMETER_GROUP 	= newArray(0);
+var _CURRENT_PARAMETER_NAME		= newArray(0);
+var _CURRENT_PARAMETER_DISPLAY 	= newArray(0);
+var _CURRENT_PARAMETER_VALUE 	= newArray(0);
+var _CURRENT_PARAMETER_HELP 	= newArray(0);
+var _CURRENT_PARAMETER_TYPE 	= newArray(0);
+var _CURRENT_PARAMETER_DEFAULT 	= newArray(0);
 
 var trainingParameterMenuArray = newArray("user parameters","advanced parameters","internal network parameters","data augmentation","---","python interpreter","install deep-learning env." );
 var trainingParameterMenuItems = newMenu("Training Parameter Menu Tool", trainingParameterMenuArray);
@@ -116,12 +116,24 @@ macro "Predict Action Tool (f8) Options" {
 }
 
 //Supplementary Macros, not associated with tools
+macro "Display Training Evaluation Plot []"{
+	baseDir = getDirectory("Base Directory");
+	files = getFileList(baseDir);
+	
+	Dialog.create("Select the model");
+	Dialog.addChoice("Model",files,"");
+	Dialog.show();
+	model = Dialog.getChoice();
+	
+	displayTrainingEvaluationPlot(baseDir,model);
+}
+
 macro "Open Log []"{
 	_pt=askLogToOpen();
 	catchLog(_pt);
 }
 
-macro "Reset all parameters to default values[]"{
+macro "Restore all parameters to default values []"{
 	showMessageWithCancel("Are you sure you want to Restore all parameters to default? This cannot be undone");
 	current_network = _CURRENT_NETWORK;
 	for(n=0;n<_NETWORKS.length();n++){
@@ -158,10 +170,9 @@ function about() {
 
 function info() {
 	requireNetwork();
-	
-	message = File.openAsString(_NETWORKS_DIR + File.separator + _CURRENT_NETWORK + "/info.html");
-	imagePath = "file:///"+_NETWORKS_DIR + File.separator + _CURRENT_NETWORK + "/picture.png";
-	imagePath = replace(imagePath, '\\', '/');
+	message = File.openAsString(_NETWORKS_DIR + File.separator + _CURRENT_NETWORK + File.separator +"info.html");
+	imagePath = "file:///"+_NETWORKS_DIR + File.separator + _CURRENT_NETWORK + File.separator +"picture.png";
+	imagePath = replace(imagePath, '\\', File.separator);
 	message = replace(message, "<!--img-->", "<img src='"+imagePath+"'>");
 	showMessage("Info: "+_CURRENT_NETWORK, message);
 }
@@ -185,7 +196,7 @@ function train() {
 	launchPythonExecution(_PT_TRAINING);
 	catchLog(_PT_TRAINING);
 	
-	displayTrainingEvaluationPlot();
+	displayTrainingEvaluationPlot(baseDir,name);
 }
 
 function evaluate() {
@@ -499,7 +510,7 @@ function getParameterString(_PT){
 function readParameters(_PT){
 	requireNetwork();
 	requireInboundPT(_PT);
-	
+
 	baseFolder = _NETWORKS_DIR + File.separator + _CURRENT_NETWORK;
 	_CURRENT_PARAMETER_GROUP = newArray(0);
 	_CURRENT_PARAMETER_NAME = newArray(0);
@@ -508,22 +519,22 @@ function readParameters(_PT){
 	_CURRENT_PARAMETER_HELP = newArray(0);
 	_CURRENT_PARAMETER_DEFAULT = newArray(0);
 	_CURRENT_PARAMETER_TYPE = newArray(0);
-	
+
 	//PT Dependent
 	parameterFile = File.openAsString(baseFolder + File.separator+_PT_ACTION[_PT]+".yml");
-	
+
 	parameterLines = split(parameterFile, "\n");
 	for (i = 0; i < parameterLines.length; i++) {
 		line = String.trim(parameterLines[i]);
 		if (line.length<1) continue;
 		nameAndValue = split(line, ":");
 		if (nameAndValue.length==1) {
-			currentGroup = replace(line, ":", '');
+			currentGroup = replace(line, ":", '');    
 			continue;
 		} 
 		name = replace(nameAndValue[0], "-", "");
 		name = String.trim(name);
-		
+
 		value = String.trim(nameAndValue[1]);
 		currentValue = 2;
 		while(currentValue<nameAndValue.length){
@@ -531,15 +542,17 @@ function readParameters(_PT){
 			currentValue++;
 		}
 		if (name=='name') {
+			equalizesParametersLength();
 			_CURRENT_PARAMETER_NAME  = Array.concat(_CURRENT_PARAMETER_NAME  , value);
 			_CURRENT_PARAMETER_GROUP = Array.concat(_CURRENT_PARAMETER_GROUP, currentGroup);
 		}
 		if (name=='display') _CURRENT_PARAMETER_DISPLAY = Array.concat(_CURRENT_PARAMETER_DISPLAY, value);
-		if (name=='value')	 _CURRENT_PARAMETER_VALUE 	= Array.concat(_CURRENT_PARAMETER_VALUE	 , value);
-		if (name=='help')	 _CURRENT_PARAMETER_HELP 	= Array.concat(_CURRENT_PARAMETER_HELP	 , value);
-		if (name=='type') 	 _CURRENT_PARAMETER_TYPE 	= Array.concat(_CURRENT_PARAMETER_TYPE	 , value);
-		if (name=='default') _CURRENT_PARAMETER_DEFAULT	= Array.concat(_CURRENT_PARAMETER_DEFAULT, value);
+		if (name=='value')   _CURRENT_PARAMETER_VALUE   = Array.concat(_CURRENT_PARAMETER_VALUE  , value);
+		if (name=='type')    _CURRENT_PARAMETER_TYPE  = Array.concat(_CURRENT_PARAMETER_TYPE   , value);
+		if (name=='default') _CURRENT_PARAMETER_DEFAULT = Array.concat(_CURRENT_PARAMETER_DEFAULT, value);
+		if (name=='help')  _CURRENT_PARAMETER_HELP  = Array.concat(_CURRENT_PARAMETER_HELP   , value);
 	}
+	equalizesParametersLength();
 	_LOADED_PARAMETERS = _PT;
 }
 
@@ -557,14 +570,43 @@ function saveParameters(_PT){
 		}
 		content = content + '- name: ' 		+ _CURRENT_PARAMETER_NAME[i] + "\n";
 		content = content + '  display: ' 	+ _CURRENT_PARAMETER_DISPLAY[i] + "\n";
-		content = content + '  value: ' 	+ _CURRENT_PARAMETER_VALUE[i] + "\n";
+		if(_CURRENT_PARAMETER_VALUE[i] == ""){
+			content = content + '  value: ' 	+ _CURRENT_PARAMETER_DEFAULT[i] + "\n";
+		}else{
+			content = content + '  value: ' 	+ _CURRENT_PARAMETER_VALUE[i] + "\n";
+		}
 		content = content + '  type: ' 		+ _CURRENT_PARAMETER_TYPE[i] + "\n";
 		content = content + '  default: '	+ _CURRENT_PARAMETER_DEFAULT[i] + "\n";
 		content = content + '  help: ' 	  	+ _CURRENT_PARAMETER_HELP[i] + "\n";
 	}
 	
-	//_PT Dependent
 	File.saveString(content, baseFolder + File.separator+_PT_ACTION[_PT]+".yml");
+}
+
+function equalizesParametersLength(){
+	//Always specify at least value or default
+	//print("B#"+_CURRENT_PARAMETER_NAME.length+"#"+_CURRENT_PARAMETER_GROUP.length+"#"+_CURRENT_PARAMETER_DISPLAY.length+"#"+_CURRENT_PARAMETER_VALUE.length+"#"+_CURRENT_PARAMETER_TYPE.length+"#"+_CURRENT_PARAMETER_DEFAULT.length+"#"+_CURRENT_PARAMETER_HELP.length);
+	if( _CURRENT_PARAMETER_DISPLAY.length < _CURRENT_PARAMETER_NAME.length ){
+		nullDisplay = _CURRENT_PARAMETER_NAME[_CURRENT_PARAMETER_NAME.length-1];
+		_CURRENT_PARAMETER_DISPLAY = Array.concat(_CURRENT_PARAMETER_DISPLAY, nullDisplay);
+	}
+	if( _CURRENT_PARAMETER_VALUE.length < _CURRENT_PARAMETER_NAME.length ){ 
+		nullValue = _CURRENT_PARAMETER_DEFAULT[_CURRENT_PARAMETER_DEFAULT.length-1];//If no values were specified, use the Default one
+		_CURRENT_PARAMETER_VALUE = Array.concat(_CURRENT_PARAMETER_VALUE, nullValue);
+	}
+	if( _CURRENT_PARAMETER_TYPE.length < _CURRENT_PARAMETER_NAME.length ){
+		nullType = "NullType";
+		_CURRENT_PARAMETER_TYPE = Array.concat(_CURRENT_PARAMETER_TYPE, nullType);
+	}
+	if( _CURRENT_PARAMETER_DEFAULT.length < _CURRENT_PARAMETER_NAME.length ){
+		nullDefault = _CURRENT_PARAMETER_VALUE[_CURRENT_PARAMETER_VALUE.length-1];  //if no default values were specified, use the "value" one
+		_CURRENT_PARAMETER_DEFAULT = Array.concat(_CURRENT_PARAMETER_DEFAULT, nullDefault);
+	}
+	if( _CURRENT_PARAMETER_HELP.length < _CURRENT_PARAMETER_NAME.length ){
+		nullHelp = "NullHelp";
+		_CURRENT_PARAMETER_HELP = Array.concat(_CURRENT_PARAMETER_HELP, nullHelp);
+	}
+	//print("A#"+_CURRENT_PARAMETER_NAME.length+"#"+_CURRENT_PARAMETER_GROUP.length+"#"+_CURRENT_PARAMETER_DISPLAY.length+"#"+_CURRENT_PARAMETER_VALUE.length+"#"+_CURRENT_PARAMETER_TYPE.length+"#"+_CURRENT_PARAMETER_DEFAULT.length+"#"+_CURRENT_PARAMETER_HELP.length);
 }
 
 
@@ -584,59 +626,68 @@ function showMenuParameterDialog() {
 	showParametersDialog(_PT_TRAINING,item);
 }
 
+
 function showParametersDialog(_PT,parameterGroup) {
 	requires("1.53d");
 	requireInboundPT(_PT);
-	
+
 	if(_PT == _PT_TRAINING){
 		dialog_title = "";
 		title_split = split(parameterGroup,"_");
 		for(i=0;i<title_split.length;i++){
 			dialog_title=dialog_title+toUpperCase(substring(title_split[i],0,1))+substring(title_split[i],1)+" ";
 		}
-		Dialog.create(dialog_title);	
+		Dialog.create(dialog_title);  
 	}else if(_PT == _PT_EVALUATE){
-		Dialog.create("Evaluation Parameters");	
+		Dialog.create("Evaluation Parameters"); 
 	}else if(_PT == _PT_PREDICT){
-		Dialog.create("Prediction Parameters");	
+		Dialog.create("Prediction Parameters"); 
 	}else{
 		print("Unable to create Parameters Dialog ! Incorrect type");
 		exit();
 	}
-	
+
 	readParameters(_PT);
 	nb_fields=0;
 	for (i = 0; i < _CURRENT_PARAMETER_GROUP.length; i++) {
 		if (_CURRENT_PARAMETER_GROUP[i]!=parameterGroup) continue;
 		nb_fields++;
 		help = replace(_CURRENT_PARAMETER_HELP[i], '\\. ', ".\n");
+		if(_CURRENT_PARAMETER_TYPE[i]=="string" || _CURRENT_PARAMETER_TYPE[i]=="file" || _CURRENT_PARAMETER_TYPE[i]=="directory"){
+			if(!help.contains("NullHelp")){
+				Dialog.addMessage(help);
+			}
+		}
+
 		if (_CURRENT_PARAMETER_TYPE[i]=="string") {
-			Dialog.addMessage(help);
 			Dialog.addString(_CURRENT_PARAMETER_DISPLAY[i], _CURRENT_PARAMETER_VALUE[i], 20);
 		}
 		if (_CURRENT_PARAMETER_TYPE[i]=="file") {
-			Dialog.addMessage(help);
 			Dialog.addFile(_CURRENT_PARAMETER_DISPLAY[i], _CURRENT_PARAMETER_VALUE[i]);
 		}
 		if (_CURRENT_PARAMETER_TYPE[i]=="directory") {
-			Dialog.addMessage(help);
 			Dialog.addDirectory(_CURRENT_PARAMETER_DISPLAY[i], _CURRENT_PARAMETER_VALUE[i]);
 		}
-		
+
 		if (_CURRENT_PARAMETER_TYPE[i]=="int" || _CURRENT_PARAMETER_TYPE[i]=="float") {
-			if (_CURRENT_PARAMETER_TYPE[i]=="int") 
+			if (_CURRENT_PARAMETER_TYPE[i]=="int"){
 				Dialog.addNumber(_CURRENT_PARAMETER_DISPLAY[i], _CURRENT_PARAMETER_VALUE[i], 0, 20, '');
-			else
-			 	Dialog.addNumber(_CURRENT_PARAMETER_DISPLAY[i], _CURRENT_PARAMETER_VALUE[i], 8, 20, '');
-			Dialog.addToSameRow();
-			Dialog.addMessage(help);
+			}else{
+				Dialog.addNumber(_CURRENT_PARAMETER_DISPLAY[i], _CURRENT_PARAMETER_VALUE[i], 8, 20, '');
+			}
 		}
 		if (_CURRENT_PARAMETER_TYPE[i]=="bool") {
 			Dialog.addCheckbox(_CURRENT_PARAMETER_DISPLAY[i], _CURRENT_PARAMETER_VALUE[i]);
-			Dialog.addToSameRow();
-			Dialog.addMessage(help);
+		}
+
+		if (_CURRENT_PARAMETER_TYPE[i]=="int" || _CURRENT_PARAMETER_TYPE[i]=="float" || _CURRENT_PARAMETER_TYPE[i]=="bool"){
+			if(!help.contains("NullHelp")){
+				Dialog.addToSameRow();
+				Dialog.addMessage(help);
+			}
 		}
 	}
+
 	if(nb_fields==0){
 		Dialog.addMessage("There are no parameters in this category");
 	}
@@ -788,22 +839,21 @@ function initNetworksArray() {
 	return networks;
 }
 
-macro "Display Training Evaluation Plot []"{
-	displayTrainingEvaluationPlot();
-}
-
-function displayTrainingEvaluationPlot() {
-	requireNetwork();
-	
-	path = ""+getValueOfParameter(_PT_TRAINING,"baseDir") + getValueOfParameter(_PT_TRAINING,"name") + File.separator + "Quality Control" + File.separator + "training_evaluation.csv";
+function displayTrainingEvaluationPlot(baseDir,model) {
+	path = ""+ baseDir + model + File.separator + "Quality Control" + File.separator + "training_evaluation.csv";
+	if(!File.exists(path)){
+		print("Unable to find training evaluation file");
+		return;
+	}
 	os = toLowerCase(getInfo("os.name"));
+	open(path);
+	/*
 	if (indexOf(os, "win")>-1) {
 		text = File.openAsString(path);
 		text = replace(text, "\n\n", "\n");
 		lines = split(text, "\n");
 		
-		header = split(lines[0],",")
-;
+		header = split(lines[0],",");
 		loss_id=-1;
 		valloss_id = -1;
 		for(i=0;i< header.length;i++){
@@ -836,17 +886,19 @@ function displayTrainingEvaluationPlot() {
 		Table.create(path);
 		Table.setColumn("loss", loss, path);
 		Table.setColumn("val_loss", valLoss, path);	
+		
 	} else {
 		open(path);
 	}
+	*/
+	
 	tableTitle = getInfo("window.title");
 	loss = Table.getColumn("loss", tableTitle);
 	valLoss = Table.getColumn("val_loss", tableTitle);
-	xValues = newArray(loss.length);
-	for (i = 1; i <= xValues.length; i++) {
-		xValues[i-1] = i; 
-	}
-	Plot.create("training evaluation "+_CURRENT_NETWORK + "(" +getValueOfParameter(_PT_TRAINING,"name") + ")", "epoch", "loss");
+	xValues = Array.getSequence(loss.length+1);
+	xValues = Array.deleteIndex(xValues,0);
+	
+	Plot.create("training evaluation "+model+"", "epoch", "loss");
 	Plot.setColor("orange");
 	Plot.setLineWidth(2);
 	Plot.add("line", xValues, loss, "training loss");
@@ -863,9 +915,9 @@ function catchLog(_PT){
 	requireInboundPT(_PT);
 	
 	_COMPRESSED_EPOCH_LOG = true;
+	_LIVE_TRAINING_PLOT = true;
 	
-	
-if (isOpen("Log")) selectWindow("Log");
+	if (isOpen("Log")) selectWindow("Log");
 	logPath = getDirectory("imagej") + "dl4mic"+File.separator +"networks"+File.separator+_CURRENT_NETWORK+File.separator+_LOG_FILENAME[_PT];
 	exists = File.exists(logPath);
 	print("log path", logPath);
@@ -879,8 +931,12 @@ if (isOpen("Log")) selectWindow("Log");
 		wait(500);
 		exists = File.exists(logPath);
 	}
-	
-	out = File.openAsString(logPath);
+	if(File.exists(logPath)){
+		out = File.openAsString(logPath);
+	}else{
+		print("Unable to find log, aborting macro");
+		exit();
+	}
 	count = 0;
 	finished = false;
 	endFound = false;
@@ -899,7 +955,15 @@ if (isOpen("Log")) selectWindow("Log");
 	
 	end   =-1;
 	last_a=-1;
-	last_b=-1;	
+	last_b=-1;
+	
+	loss_value = newArray();
+	valloss_value = newArray();
+	plot_started = false;
+	
+	if(_PT == _PT_TRAINING && _LIVE_TRAINING_PLOT){
+		Plot.create("Current Training", "epoch", "loss");
+	}
 	while (!finished){
 		if (endFound) finished = true;
 		lines = split(out, "\n");
@@ -910,6 +974,7 @@ if (isOpen("Log")) selectWindow("Log");
 		start = count;
 		end = lines.length;
 	
+		
 		for (i = start; i < end; i++) {
 			printed= false;
 			if(_COMPRESSED_EPOCH_LOG){
@@ -932,6 +997,57 @@ if (isOpen("Log")) selectWindow("Log");
 			if(!printed){
 				print(lines[i]);
 			}
+			if(_PT == _PT_TRAINING && _LIVE_TRAINING_PLOT){
+				if(lines[i].startsWith("Epoch")){
+					if(i==0){
+						
+					}else{
+						epoch_split=split(lines[i-1]," ");
+						loss_set = false;
+						valloss_set = false;
+						for(s=0;s<epoch_split.length;s++){
+							if(epoch_split[s]=="loss:"){
+								loss_value = Array.concat(loss_value,parseFloat(epoch_split[s+1]));
+								loss_set = true;
+							}
+							if(epoch_split[s]=="val_loss:"){
+								valloss_value = Array.concat(valloss_value,parseFloat(epoch_split[s+1]));
+								valloss_set = true;
+							}
+						}
+						if(!loss_set){
+							loss_value = Array.concat(loss_value,NaN);
+						}
+						if(!valloss_set){
+							valloss_value = Array.concat(valloss_value,NaN);
+						}
+						xValues = Array.getSequence(loss_value.length);
+						if(plot_started){
+							Plot.setColor("orange");
+							Plot.replace( 0,"line", xValues, loss_value);
+							Plot.setColor("blue");
+							Plot.replace( 1,"line", xValues, valloss_value);
+							Plot.setLegend("training loss\tvalidation loss", "top-right");
+							Plot.setStyle(0, "orange,none,2.0,Line");
+							Plot.setStyle(1, "blue,none,2.0,Line");
+							Plot.removeNaNs;
+						}else{
+							if(loss_value[loss_value.length-1]!=NaN && valloss_value[valloss_value.length-1]!=NaN){
+								Plot.setColor("orange");
+								Plot.setLineWidth(2);
+								Plot.add("line", xValues, loss_value, "training loss");
+								Plot.setColor("blue");
+								Plot.setLineWidth(2);
+								Plot.add("line", xValues, valloss_value, "validation loss");
+								Plot.update();
+								plot_started=true;
+							}
+						}
+						Plot.setLimits(0,xValues.length+1,NaN,NaN);
+						//Plot.setLimitsToFit();
+					}
+				}
+			}
 		}
 		count=end;
 		endFound = indexOf(out, endString)!=-1;
@@ -940,5 +1056,8 @@ if (isOpen("Log")) selectWindow("Log");
 		if (File.exists(logPath)){
 		    out = File.openAsString(logPath);
 	    }
+	}
+	if(_PT==_PT_TRAINING && _LIVE_TRAINING_PLOT){
+		close("Current Training");
 	}
 }
