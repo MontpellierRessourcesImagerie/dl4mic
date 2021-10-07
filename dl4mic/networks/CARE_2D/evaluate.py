@@ -1,3 +1,6 @@
+# ------------------ Diclaimer ------------------
+#WIP> DON'T TRY TO USE THIS NETWORK YET
+# -----------------------------------------------
 import sys
 import os
 import shutil
