@@ -1,0 +1,6 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+/dl4mic/models/*
+log_*

@@ -1,3 +1,11 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
+/dl4mic/models/*
+
+/dl4mic/networks/UNet_2D/log_*
+/dl4mic/networks/Stardist_2D/log_*
+/dl4mic/networks/Noise2Void_2D/log_*
+/dl4mic/networks/Dense_Unet_2D/log_*
+/dl4mic/networks/CARE_2D/log_*
