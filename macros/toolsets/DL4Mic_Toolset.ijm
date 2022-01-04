@@ -451,7 +451,7 @@ function launchPythonExecution(_PT){
 		setOption("WaitForCompletion", false);
 		a = exec(_PT_ACTION[_PT]+".bat");
 	} else {
-		command = "cd "+baseFolder+"; "+_PYTHON_INTERPRETER+" -u "+script+" "+parameters+" 2>&1 | tee "++ _LOG_FILENAME[_PT];
+		command = "cd "+baseFolder+"; "+_PYTHON_INTERPRETER+" -u "+script+" "+parameters+" 2>&1 | tee "+ _LOG_FILENAME[_PT];
 		a = exec("gnome-terminal", "--geometry=0x0", "-x", "sh", "-c", command);
 	}
 }
@@ -846,8 +846,6 @@ function displayTrainingEvaluationPlot(baseDir,model) {
 		return;
 	}
 	os = toLowerCase(getInfo("os.name"));
-	open(path);
-	/*
 	if (indexOf(os, "win")>-1) {
 		text = File.openAsString(path);
 		text = replace(text, "\n\n", "\n");
@@ -890,7 +888,6 @@ function displayTrainingEvaluationPlot(baseDir,model) {
 	} else {
 		open(path);
 	}
-	*/
 	
 	tableTitle = getInfo("window.title");
 	loss = Table.getColumn("loss", tableTitle);

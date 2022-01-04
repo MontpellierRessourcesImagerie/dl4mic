@@ -106,9 +106,9 @@ def create_patches(Training_source, Training_target, patch_width, patch_height):
     img_save_path = os.path.join(Patch_source,'patch_'+str(i)+'.tif')
     mask_save_path = os.path.join(Patch_target,'patch_'+str(i)+'.tif')
 
-    # if the mask conatins at least 1% of its total number pixels as mask, then go ahead and save the images
+    # if the mask conatins at least 5% of its total number pixels as mask, then go ahead and save the images
     pixel_threshold_array = sorted(all_patches_mask[i].flatten())
-    if pixel_threshold_array[int(round(len(pixel_threshold_array)*0.99))]>0:
+    if pixel_threshold_array[int(round(len(pixel_threshold_array)*0.95))]>0:
       io.imsave(img_save_path, img_as_ubyte(normalizeMinMax(all_patches_img[i])))
       io.imsave(mask_save_path, convert2Mask(normalizeMinMax(all_patches_mask[i]),0))
     else:

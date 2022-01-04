@@ -8,46 +8,77 @@ import csv
 import io
 sys.path.append(r'../lib/')
 from dl4mic.cliparser import ParserCreator
-from dl4mic.unet import *
+from dl4mic.care import *
 
 def main(argv):
-    W = '\033[0m'  # white (normal)
-    R = '\033[31m'  # red
+    prediction_prefix = ""
     parser = ParserCreator.createArgumentParser("./evaluate.yml")
     args = parser.parse_args(argv[1:])
+    
     full_QC_model_path = os.path.join(args.baseDir, args.name)
-    if os.path.exists(os.path.join(full_QC_model_path, 'weights_best.hdf5')):
-        print("The " + args.name + " network will be evaluated")
-    else:
-        print(R + '!! WARNING: The chosen model does not exist !!' + W)
-        print('Please make sure you provide a valid model path and model name before proceeding further.')
+    model_weight_path = getValidModel(full_QC_model_path)
 
     # Create a quality control/Prediction Folder
+
+    prediction_QC_folder = cleanAndGetFolderQC(full_QC_model_path)
+
+    model = createNetwork()
+    
+    model.keras_model.load_weights(model_weight_path)
+
+    source_dir_list = prepareDataset()
+
+    predictions = runPredictions(source_dir_list,model)
+
+    saveResult(prediction_QC_folder, predictions, source_dir_list, prefix=prediction_prefix, threshold=None)
+
+    write_QC(full_QC_model_path)
+
+    print("---evaluation done---")
+
+
+def getValidModel(full_model_path):
+    (_,model_name) = os.path.split(full_model_path)
+    if os.path.exists(os.path.join(full_model_path, 'weights_best.h5')):
+        print("The " + model_name + " network will be used.")
+        return os.path.join(full_model_path, 'weights_best.h5')
+    else:
+        if os.path.exists(os.path.join(full_model_path, 'weights_best.hdf5')):
+            print("The " + model_name + " network will be used.")
+            return os.path.join(full_model_path, 'weights_best.hdf5')
+        else:
+            print('!! WARNING: The chosen model does not exist !!')
+            print('Please make sure you provide a valid model path and model name before proceeding further.')
+            return False
+
+def cleanAndGetFolderQC(full_QC_model_path):
     prediction_QC_folder = os.path.join(full_QC_model_path, 'Quality Control', 'Prediction')
     if os.path.exists(prediction_QC_folder):
         shutil.rmtree(prediction_QC_folder)
-
     os.makedirs(prediction_QC_folder)
 
-    # Load the model
-    unet = load_model(os.path.join(full_QC_model_path, 'weights_best.hdf5'),
-                      custom_objects={'_weighted_binary_crossentropy': weighted_binary_crossentropy(np.ones(2))})
-    Input_size = unet.layers[0].output_shape[1:3]
-    print('Model input size: '+str(Input_size[0])+'x'+str(Input_size[1]))
 
-    # Create a list of sources
+def createNetwork():
+    model = care(conf,name=args.name, basedir=args.baseDir)
+    model.keras_model.summary()
+    return model
+        
+def prepareDataset():
     source_dir_list = os.listdir(args.testInputPath)
     number_of_dataset = len(source_dir_list)
-    print('Number of dataset found in the folder: '+str(number_of_dataset))
+    print('Number of dataset found in the folder: ' + str(number_of_dataset))
+    return source_dir_list
 
+def runPrediction(source_data_list,model):
+    number_of_dataset = len(source_data_list)
     predictions = []
     for i in range(number_of_dataset):
-        print("processing dataset " + str(i+1) + ", file: " + source_dir_list[i])
-        predictions.append(predict_as_tiles(os.path.join(args.testInputPath, source_dir_list[i]), unet))
+        print("processing dataset " + str(i + 1) + ", file: " + source_data_list[i])
+        predictions.append(predict_as_tiles(os.path.join(args.dataPath, source_data_list[i]), model))
+    return predictions
 
-    # Save the results in the folder along with the masks according to the set threshold
-    saveResult(prediction_QC_folder, predictions, source_dir_list, prefix=prediction_prefix, threshold=None)
-
+    
+def write_QC(full_QC_model_path):
     with open(os.path.join(full_QC_model_path, 'Quality Control', 'QC_metrics_' + args.name + '.csv'), "w",
               newline='') as file:
         writer = csv.writer(file)
@@ -80,8 +111,6 @@ def main(argv):
                 filename_list.append(filename)
                 best_IoU_score_list.append(best_IoU_score)
                 best_threshold_list.append(best_threshold)
-
-    print("---evaluation done---")
 
 
 if __name__ == '__main__':

@@ -50,7 +50,7 @@ def main(argv):
         print(R + '!! WARNING: Folder already exists and will be overwritten !!' + W)
 
     model_checkpoint = ModelCheckpoint(os.path.join(full_model_path, 'weights_best.hdf5'), monitor='val_loss',
-                                       verbose=1, save_best_only=True)
+                                       verbose=0, save_best_only=True)
     print('Getting class weights...')
     class_weights = getClassWeights(args.dataTargetPath)
     h5_file_path = None
