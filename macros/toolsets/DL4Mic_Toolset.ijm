@@ -43,6 +43,9 @@ var trainingParameterMenuItems = newMenu("Training Parameter Menu Tool", trainin
 
 var helpURL = "https://github.com/MontpellierRessourcesImagerie/dl4mic/wiki";
 
+train();
+exit;
+
 //About Tool
 macro "DL4Mic Action Tool (f2) - C666D00C555D10C444L2090C333Da0C777Db0CeeeDc0C777D01C666D11C555D21C444L31b1C888Dc1CeeeDd1C777L0222C555D32C666L42a2C555Lb2c2C999Dd2C777L0323C888D33CcccL43b3CaaaDc3C999Dd3C777L0424C999D34CdddL44b4CbbbDc4C999Dd4C777L0525C999D35CdddL45b5CbbbDc5C999Dd5C777L0626C999D36CdddL46b6CbbbDc6C999Dd6C777L0727C999D37CdddL47b7CbbbDc7C999Dd7C666D08C777L1828C999D38CdddL48b8CbbbDc8C999Dd8C666L0919C777D29C999D39CdddL49b9CbbbDc9C999Dd9CdddD0aC777D1aC666D2aC888D3aCdddL4abaCbbbDcaC999DdaCdddD1bC777D2bC888D3bCdddL4bbbCbbbDcbC999DdbCdddD2cC888D3cC999L4cbcC888DccC999DdcCeeeD3dCdddL4dcdCeeeDdd" {
 	about();
@@ -452,6 +455,7 @@ function launchPythonExecution(_PT){
 		a = exec(_PT_ACTION[_PT]+".bat");
 	} else {
 		command = "cd "+baseFolder+"; "+_PYTHON_INTERPRETER+" -u "+script+" "+parameters+" 2>&1 | tee "+ _LOG_FILENAME[_PT];
+		print(command);
 		a = exec("gnome-terminal", "--geometry=0x0", "-x", "sh", "-c", command);
 	}
 }
@@ -1027,7 +1031,7 @@ function catchLog(_PT){
 							Plot.setLegend("training loss\tvalidation loss", "top-right");
 							Plot.setStyle(0, "orange,none,2.0,Line");
 							Plot.setStyle(1, "blue,none,2.0,Line");
-							Plot.removeNaNs;
+							//Plot.removeNaNs("Current Training");
 						}else{
 							if(loss_value[loss_value.length-1]!=NaN && valloss_value[valloss_value.length-1]!=NaN){
 								Plot.setColor("orange");
