@@ -38,7 +38,7 @@ var _CURRENT_PARAMETER_HELP 	= newArray(0);
 var _CURRENT_PARAMETER_TYPE 	= newArray(0);
 var _CURRENT_PARAMETER_DEFAULT 	= newArray(0);
 
-var trainingParameterMenuArray = newArray("user parameters","advanced parameters","internal network parameters","data augmentation","---","python interpreter","install deep-learning env." );
+var trainingParameterMenuArray = newArray("user parameters","advanced parameters","internal network parameters","data augmentation","load parameters from file","---","python interpreter","install deep-learning env." );
 var trainingParameterMenuItems = newMenu("Training Parameter Menu Tool", trainingParameterMenuArray);
 
 var helpURL = "https://github.com/MontpellierRessourcesImagerie/dl4mic/wiki";
@@ -192,14 +192,16 @@ function train() {
 		dataPath = getValueOfParameter(_PT_TRAINING,'dataSourcePath');
 	}
 	baseDir = getValueOfParameter(_PT_TRAINING,'baseDir');
-	name = getValueOfParameter(_PT_TRAINING,"name");
+	name = getValueOfParameter(_PT_TRAINING,'name');
 	outPath = baseDir + name;
-	showMessageWithCancel("Training of "+_CURRENT_NETWORK+"\n"+"Epochs: " + epochs + "\n" + "Data path: "+dataPath + "\n" + "Result will be saved as " + outPath);
+	//showMessageWithCancel("Training of "+_CURRENT_NETWORK+"\n"+"Epochs: " + epochs + "\n" + "Data path: "+dataPath + "\n" + "Result will be saved as " + outPath);
 	
 	launchPythonExecution(_PT_TRAINING);
 	catchLog(_PT_TRAINING);
 	
 	displayTrainingEvaluationPlot(baseDir,name);
+	saveParameterString(_PT_TRAINING);
+	
 }
 
 function evaluate() {
@@ -450,7 +452,7 @@ function launchPythonExecution(_PT){
 	File.delete(logPath);
 	os = toLowerCase(getInfo("os.name"));
 	if (indexOf(os, "win")>-1) {
-		writeBatchFile(_PT);
+		writeBatchFile(_PT,parameters);
 		setOption("WaitForCompletion", false);
 		a = exec(_PT_ACTION[_PT]+".bat");
 	} else {
@@ -460,11 +462,11 @@ function launchPythonExecution(_PT){
 	}
 }
 
-function writeBatchFile(_PT) {
+function writeBatchFile(_PT,parameters) {
 	requireNetwork();
 	requireInboundPT(_PT);
 	
-	parameters = getParameterString(_PT);
+	//parameters = getParameterString(_PT);
 	dir = getDirectory("imagej");
 	parts = split(dir, "\\");
 	driveLetter = parts[0];
@@ -492,6 +494,18 @@ function getValueOfParameter(_PT,aParameter) {
 	return result;
 }
 
+macro "Save Parameter String"{
+	Dialog.create("Chose Parameter Typ");
+	items = newArray(_PT_TRAINING,_PT_EVALUATE,_PT_PREDICT);
+	Dialog.addChoice("Type", items, _PT_TRAINING);
+	Dialog.show();
+	choice = Dialog.getChoice();
+	string = getParameterString(choice);
+	print(string);
+	saveParameterString(choice);
+}
+
+
 function getParameterString(_PT){
 	requireInboundPT(_PT);
 	
@@ -509,6 +523,36 @@ function getParameterString(_PT){
 		}
 	}
 	return string;
+}
+
+
+function loadParameterFromFile(filePath){
+	if(!File.exists(filePath)){
+		print("Parameter file doesn't exists, Loading failed");
+		return;
+	}
+	fileContent = File.openAsString(filePath);
+	fields = split(fileContent, "(--)");
+	networkField = split(fields[1], " ");
+	setNetwork(networkField[1]);
+	readParameters(_PT_TRAINING);
+	
+	for (f = 2; f < fields.length; f++) {
+		currentField = split(fields[f], " ");
+		for(p = 0 ; p < _CURRENT_PARAMETER_NAME.length;p++){
+			if(currentField[0] != _CURRENT_PARAMETER_NAME[p]){
+				continue;
+			}
+			if(_CURRENT_PARAMETER_TYPE[p] == "bool"){
+				 _CURRENT_PARAMETER_VALUE[p] = true;
+			}
+			else{
+				 _CURRENT_PARAMETER_VALUE[p] = currentField[1];
+			}
+			break;
+		}
+	}
+	saveParameters(_PT_TRAINING);
 }
 
 function readParameters(_PT){
@@ -589,7 +633,6 @@ function saveParameters(_PT){
 
 function equalizesParametersLength(){
 	//Always specify at least value or default
-	//print("B#"+_CURRENT_PARAMETER_NAME.length+"#"+_CURRENT_PARAMETER_GROUP.length+"#"+_CURRENT_PARAMETER_DISPLAY.length+"#"+_CURRENT_PARAMETER_VALUE.length+"#"+_CURRENT_PARAMETER_TYPE.length+"#"+_CURRENT_PARAMETER_DEFAULT.length+"#"+_CURRENT_PARAMETER_HELP.length);
 	if( _CURRENT_PARAMETER_DISPLAY.length < _CURRENT_PARAMETER_NAME.length ){
 		nullDisplay = _CURRENT_PARAMETER_NAME[_CURRENT_PARAMETER_NAME.length-1];
 		_CURRENT_PARAMETER_DISPLAY = Array.concat(_CURRENT_PARAMETER_DISPLAY, nullDisplay);
@@ -610,8 +653,7 @@ function equalizesParametersLength(){
 		nullHelp = "NullHelp";
 		_CURRENT_PARAMETER_HELP = Array.concat(_CURRENT_PARAMETER_HELP, nullHelp);
 	}
-	//print("A#"+_CURRENT_PARAMETER_NAME.length+"#"+_CURRENT_PARAMETER_GROUP.length+"#"+_CURRENT_PARAMETER_DISPLAY.length+"#"+_CURRENT_PARAMETER_VALUE.length+"#"+_CURRENT_PARAMETER_TYPE.length+"#"+_CURRENT_PARAMETER_DEFAULT.length+"#"+_CURRENT_PARAMETER_HELP.length);
-}
+	}
 
 
 //Dialog Management
@@ -625,6 +667,10 @@ function showMenuParameterDialog() {
 	if (item == 'install deep-learning env.') {
 		showInstallEnvDialog();
 		return;	
+	}
+	if (item == 'load parameters from file') {
+		showLoadParametersDialog();
+		return;
 	}
 	item = replace(item, " ", "_");
 	showParametersDialog(_PT_TRAINING,item);
@@ -711,6 +757,14 @@ function showParametersDialog(_PT,parameterGroup) {
 	saveParameters(_PT);
 }
 
+function showLoadParametersDialog() {
+	Dialog.create("Load Parameters");
+	Dialog.addFile("Option File","");
+	Dialog.show();
+	path = Dialog.getString();
+	loadParameterFromFile(path);
+}
+
 function showInstallEnvDialog() {
 	oldEnv = _CONDA_ENV;
 	Dialog.create("Install deep-learning env.");
@@ -732,7 +786,10 @@ function showPythonInterpreterDialog() {
 }
 
 function selectNetwork() {
-   _CURRENT_NETWORK = getArgument();
+	setNetwork(getArgument());
+}
+function setNetwork(network){
+   _CURRENT_NETWORK = network;
    _LOADED_PARAMETERS = -1;
    print("DL4Mic - Current network: ", _CURRENT_NETWORK);
 }
@@ -769,6 +826,16 @@ function requireInboundPT(_PT){
 		showMessage("Error: Parameter type Out of Bound");
 		exit;
 	}	
+}
+
+function saveParameterString(pt){
+	parameters = getParameterString(pt);
+	
+	baseDir = getValueOfParameter(pt,'baseDir');
+	name = getValueOfParameter(pt,'name');
+	outPath = baseDir + name + "/options.txt";
+	parameters="--network "+_CURRENT_NETWORK+" "+parameters;
+	File.saveString(parameters, outPath);
 }
 
 function setSubtitles(imageID, columnName, label) {
@@ -961,9 +1028,9 @@ function catchLog(_PT){
 	loss_value = newArray();
 	valloss_value = newArray();
 	plot_started = false;
-	
+	tableTitle = _CURRENT_NETWORK+" Current Training";
 	if(_PT == _PT_TRAINING && _LIVE_TRAINING_PLOT){
-		Plot.create("Current Training", "epoch", "loss");
+		Plot.create(tableTitle, "epoch", "loss");
 	}
 	while (!finished){
 		if (endFound) finished = true;
@@ -1031,7 +1098,6 @@ function catchLog(_PT){
 							Plot.setLegend("training loss\tvalidation loss", "top-right");
 							Plot.setStyle(0, "orange,none,2.0,Line");
 							Plot.setStyle(1, "blue,none,2.0,Line");
-							//Plot.removeNaNs("Current Training");
 						}else{
 							if(loss_value[loss_value.length-1]!=NaN && valloss_value[valloss_value.length-1]!=NaN){
 								Plot.setColor("orange");
@@ -1059,6 +1125,24 @@ function catchLog(_PT){
 	    }
 	}
 	if(_PT==_PT_TRAINING && _LIVE_TRAINING_PLOT){
-		close("Current Training");
+		close(tableTitle);
+	}
+}
+
+macro "Test MultiLaunch"{
+	nbLaunch = 5
+	
+	name = getValueOfParameter(_PT_TRAINING,'name');
+	
+	for (l = 0; l < nbLaunch; l++) {
+		print("Launching Training "+l);
+		readParameters(_PT_TRAINING);
+		for (i = 0; i < _CURRENT_PARAMETER_GROUP.length; i++) {
+			if (_CURRENT_PARAMETER_NAME[i]=='name') _CURRENT_PARAMETER_VALUE[i] = "M"+l+"_"+name;
+		}
+		saveParameters(_PT_TRAINING);
+		readParameters(_PT_TRAINING);
+		train();
+		print("Finished Training "+l);
 	}
 }

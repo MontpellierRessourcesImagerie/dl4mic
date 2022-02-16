@@ -28,15 +28,19 @@ def main(argv):
 
     print('Tensorflow version is ' + str(tf.__version__))
 
-    data_gen_args = dict(width_shift_range=args.horizontalShift/100.,
-                         height_shift_range=args.verticalShift/100.,
-                         rotation_range=args.rotationRange,
-                         zoom_range=args.zoomRange/100.,
-                         shear_range=args.shearRange/100.,
-                         horizontal_flip=args.horizontalFlip,
-                         vertical_flip=args.verticalFlip,
-                         validation_split=args.validationFraction/100,
-                         fill_mode='reflect')
+    if args.useDataAugmentation:
+        data_gen_args = dict(width_shift_range=args.horizontalShift/100.,
+                             height_shift_range=args.verticalShift/100.,
+                             rotation_range=args.rotationRange,
+                             zoom_range=args.zoomRange/100.,
+                             shear_range=args.shearRange/100.,
+                             horizontal_flip=args.horizontalFlip,
+                             vertical_flip=args.verticalFlip,
+                             validation_split=args.validationFraction/100,
+                             fill_mode='reflect')
+    else:
+        data_gen_args = dict(validation_split=args.validationFraction/100,
+                             fill_mode='reflect')
     print('Creating patches...')
     Patch_source, Patch_target = create_patches(args.dataSourcePath, args.dataTargetPath,
                                                 args.patchSizeXY, args.patchSizeXY)

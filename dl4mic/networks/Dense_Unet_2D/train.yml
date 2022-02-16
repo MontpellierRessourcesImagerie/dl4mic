@@ -1,37 +1,37 @@
 user_parameters:
 - name: name
   display: Name
-  value: new_denseunet2D_model
+  value: 220216-DUnet
   type: string
   default: new_denseunet2D_model
   help: The name of the model. The model will be saved in a folder with this name. Using the name of an existing model will overwrite the data
 - name: baseDir
   display: Base Directory
-  value: E:\MRI\Fiji.app\dl4mic\models\
+  value: /home/ltellez/Documents/Fiji.app/dl4mic/models/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\models\
   help: The base-folder under which the trained model will be saved.
 - name: dataSourcePath
   display: Path to the Source Data
-  value: E:\MRI\Fiji.app\dl4mic\unet-data\training_source\
+  value: /mnt/data/ltellez/SylvainDL/training_source/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\unet-data\training_source\
   help: The path to the folder containing the input images on which the model will be trained.
 - name: dataTargetPath
   display: Path to the Target Data
-  value: E:\MRI\Fiji.app\dl4mic\unet-data\training_gt\
+  value: /mnt/data/ltellez/SylvainDL/training_GT/
   type: directory
   default: E:\MRI\Fiji.app\dl4mic\unet-data\training_source\
   help: The path to the folder containing the gt-masks on which the model will be trained.
 - name: epochs
   display: Epochs
-  value: 200
+  value: 256
   type: int
   default: 200
   help: The number of epochs the network will be trained.
 - name: patchSizeXY
   display: Patch Size XY
-  value: 64
+  value: 128
   type: int
   default: 512
   help: The image is divided into patches for training. Input the size of the patches (length of a side). Larger patches than 512x512 should NOT be selected for network stability.
@@ -44,7 +44,7 @@ advanced_parameters:
   help: Define the number of training steps by epoch. By default this parameter is calculated so that each image / patch is seen at least once per epoch. Enter 0 to use number_of_patches / batch_size.
 - name: batchSize
   display: Batch Size
-  value: 1
+  value: 12
   type: int
   default: 4
   help: This parameter describes the amount of images that are loaded into the network per step. Smaller batchsizes may improve training performance slightly but may increase training time. If the notebook crashes while loading the dataset this can be due to a too large batch size. Decrease the number in this case.
@@ -76,37 +76,37 @@ data_augmentation:
   help: Data augmentation can improve training progress by amplifying differences in the dataset. This can be useful if the available dataset is small since, in this case, it is possible that a network could quickly learn every example in the dataset (overfitting), without augmentation. Augmentation is not necessary for training and if the dataset is large the values can be set to False.
 - name: horizontalShift
   display: Horizontal Shift
-  value: 100
+  value: 0
   type: int
   default: 10
   help: shift images horizontally up to the given percentage of the image width
 - name: verticalShift
   display: Vertical Shift
-  value: 200
+  value: 0
   type: int
   default: 20
   help: shift images vertically up to the given percentage of the image height
 - name: zoomRange
   display: Zoom Range
-  value: 2
+  value: 0
   type: int
   default: 10
   help: apply random zooms in the range [100-zoomRange, 100+zoomRange]
 - name: shearRange
   display: Shear Range
-  value: 10
+  value: 0
   type: int
   default: 10
   help: set the shear intensity (shear angle in counter-clockwise direction in degrees)
 - name: horizontalFlip
   display: Horizontal Flip
-  value: 0
+  value: 1
   type: bool
   default: True
   help: use horizontal flips of the image
 - name: verticalFlip
   display: Vertical Flip
-  value: 0
+  value: 1
   type: bool
   default: True
   help: use vertical flips of the image
