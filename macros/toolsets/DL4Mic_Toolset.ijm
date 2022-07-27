@@ -454,7 +454,8 @@ function launchPythonExecution(_PT){
 	if (indexOf(os, "win")>-1) {
 		writeBatchFile(_PT,parameters);
 		setOption("WaitForCompletion", false);
-		a = exec(_PT_ACTION[_PT]+".bat");
+		folder = getDirectory("imagej");
+		a = exec(folder + File.separator + _PT_ACTION[_PT] + ".bat");
 	} else {
 		command = "cd "+baseFolder+"; "+_PYTHON_INTERPRETER+" -u "+script+" "+parameters+" 2>&1 | tee "+ _LOG_FILENAME[_PT];
 		print(command);
