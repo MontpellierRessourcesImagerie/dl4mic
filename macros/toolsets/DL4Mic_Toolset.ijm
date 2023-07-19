@@ -3,6 +3,7 @@ var _INTERPRETER_PATH= newArray(
 	getDir("home") + "anaconda3" + File.separator + "envs" + File.separator + _CONDA_ENV + File.separator + "bin" + File.separator +"python3",
 	getDir("home") + "Anaconda3" + File.separator + "envs" + File.separator + _CONDA_ENV + File.separator + "python.exe",
 	getDir("home") + ".conda" + File.separator + "envs" + File.separator + _CONDA_ENV + File.separator + "python.exe",
+    getDir("home") + "mambaforge" + File.separator + "envs" + File.separator + _CONDA_ENV + File.separator + "bin" + File.separator + "python",
 	'C:/ProgramData/Anaconda3/envs/dl/python.exe'
 	)
 var _PYTHON_INTERPRETER = findPythonInterpreter();
@@ -467,7 +468,7 @@ function writeBatchFile(_PT,parameters) {
 	requireNetwork();
 	requireInboundPT(_PT);
 	
-	//parameters = getParameterString(_PT);
+	parameters = getParameterString(_PT);
 	dir = getDirectory("imagej");
 	parts = split(dir, "\\");
 	driveLetter = parts[0];
@@ -789,11 +790,14 @@ function showPythonInterpreterDialog() {
 function selectNetwork() {
 	setNetwork(getArgument());
 }
+
+
 function setNetwork(network){
    _CURRENT_NETWORK = network;
    _LOADED_PARAMETERS = -1;
    print("DL4Mic - Current network: ", _CURRENT_NETWORK);
 }
+
 
 function askLogToOpen(){
 	Dialog.create("Log Opener");
